@@ -328,3 +328,21 @@ p {
 #howitworks p {
     text-align: left;
 }
+
+html {
+    height: 100vh;
+}
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    background-color: #189a87;
+    color: #0e584d;
+    padding: .3rem;
+}
