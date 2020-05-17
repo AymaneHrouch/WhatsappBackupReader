@@ -135,16 +135,16 @@ function convertFile(contents) {
                 classe = "darker" // one user should have this class so their container have a different styling
             }
             try {
-                n = messages[i].search(".opus"); // search if the message contain an audio file
-                m = messages[i].search("(file attached)"); // search if the message contain (file attached)
-                p = messages[i].search(".jpg");  // search if the message contain a picture
-                q = messages[i].search(".mp4");  // search if the message contain a video
+                hasOpus = messages[i].search(".opus"); // search if the message contain an audio file
+                hasFileAttached = messages[i].search("(file attached)"); // search if the message contain (file attached)
+                hasJpg = messages[i].search(".jpg");  // search if the message contain a picture
+                hasMp4 = messages[i].search(".mp4");  // search if the message contain a video
             } catch (err) {
                 console.log("OK")
             }
             if (messages[i] == undefined) { // if message is empty
                 html = '<div class="container"><div>' + usernames[i] + '</div> <div class="date">' + date[i] + '</div> </div>'
-            } else if (n != -1 && m != -1) { // handle message when it contains audio file
+            } else if (hasOpus != -1 && hasFileAttached != -1) { // handle message when it contains audio file
 
                 mediaFile = messages[i].split('.opus (file attached)');
 
@@ -152,12 +152,12 @@ function convertFile(contents) {
                 html = '<div class="container ' + classe + '"> <div class="username">' + usernames[i] + '</div> <audio controls> <source src="' + mediaFile[0] + '.opus" type="audio/ogg"> </audio> <div class="date">' + date[i] + '</div> </div>'
 
 
-            } else if (m != -1 && p != -1) { // handle message when it contains picture
+            } else if (hasFileAttached != -1 && hasJpg != -1) { // handle message when it contains picture
                 mediaFile = messages[i].split('.jpg (file attached)');
 
                 html = '<div class="container ' + classe + '"><div class="username">' + usernames[i] + '</div> <div> <a href="' + mediaFile[0] + '.jpg" target="_blank"><img src="' + mediaFile[0] + '.jpg" alt=""></a> </div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>'
 
-            } else if (m != -1 && q != -1) { // handle message when it contains a video file
+            } else if (hasFileAttached != -1 && hasMp4 != -1) { // handle message when it contains a video file
                 mediaFile = messages[i].split('.mp4 (file attached)');
 
                 html = '<div class="container ' + classe + '"> <div class="username"><pre>' + usernames[i] + '     <a href="' + mediaFile[0] + '.mp4" target="_blank">Open video in a new window</a></pre></div> <div><video width="250" controls><source src="' + mediaFile[0] + '.mp4" alt=""></video></div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>';
@@ -170,12 +170,12 @@ function convertFile(contents) {
 
 
 
-        var d = new Date();
+        var dateOfGenerating = new Date(); // get date of generating the exported chat!
 
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-        arr.push('<div class="footer">Generated on ' + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' at ' + d.getHours() + ':' + d.getMinutes() + '<br>All rights reserved to <a href="http://cwmn.000webhostapp.com/WBR/" target="_blank">WBR</a> &copy; 2019</div> </body>');
+        arr.push('<div class="footer">Generated on ' + days[dateOfGenerating.getDay()] + ', ' + months[dateOfGenerating.getMonth()] + ' ' + dateOfGenerating.getDate() + ', ' + dateOfGenerating.getFullYear() + ' at ' + dateOfGenerating.getHours() + ':' + dateOfGenerating.getMinutes() + '<br>All rights reserved to <a href="http://cwmn.000webhostapp.com/WBR/" target="_blank">WBR</a> &copy; 2019</div> </body>');
         arr = arr.join('\n');
         return arr
     })()
