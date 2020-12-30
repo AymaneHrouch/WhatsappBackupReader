@@ -9,6 +9,9 @@ Whatsapp limits :
 
 ![](whatsapplimittable.jpg)
 
-You can also check this [DEMO](https://cwmn.000webhostapp.com/WBR/)
+You can use it from [HERE](http://jspractice666.000webhostapp.com/)
+
+You can also check this [DEMONSTRATION VIDEO](https://www.youtube.com/watch?v=bcFvHOYVUHk) on Youtube.
+
 
 Hope you like it!
