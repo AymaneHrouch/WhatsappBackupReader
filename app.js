@@ -129,8 +129,8 @@ function convertFile(contents) {
             var classe = "",
                 direction = "right",
                 mediaFile = "";
-            var n = -1,
-                m = -1;
+            var hasOpus = -1,
+                hasFileAttached = -1;
             if (usernames[i] == userOne) {
                 classe = "darker" // one user should have this class so their container have a different styling
             }
