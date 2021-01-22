@@ -1,5 +1,36 @@
+//LOCALIZATION SETTINGS
+/*
+Set the date format of your export here.
+Available placeholders:
+  DD - Day of a month (01 - 31)
+  MM - Number of a month (01 - 12)
+  YY - Last two digits of a year (00 - 99)
+  HH - Hours in both 12-hour or 24-hour format (00-23)
+  mm - Minutes (00-59)
+  AA - Ante meridiem and Post meridiem (AM or PM)
+  aa - Same as AA, but works if the " AM" or " PM" strings (space before them including) are missing too
+Do you need placeholders for different values? Submit an issue.
+*/
+const dateFormat = "DD/MM/YY, HH:mm aa"
+
 // 4YM4N3 - 2019 // 
 console.log("App has launched!")
+
+//Process the date format into a regex
+var regexString = dateFormat;
+regexString = regexString.replaceAll(' ', '\\s');
+regexString = regexString.replaceAll('/', '\\/');
+regexString = regexString.replaceAll('\\saa', '\\s?[PA]?[M]?');
+regexString = regexString.replaceAll('aa', ' [PA]?[M]?');
+regexString = regexString.replaceAll('AA', '[PA][M]');
+regexString = regexString.replaceAll('mm', '\\d{1,2}');
+regexString = regexString.replaceAll('HH', '\\d{1,2}');
+regexString = regexString.replaceAll('DD', '\\d{1,2}');
+regexString = regexString.replaceAll('MM', '\\d{1,2}');
+regexString = regexString.replaceAll('YY', '[1-9][0-9]');
+
+// Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
+var regex = new RegExp("(?:[\\r\\n]*)(?=^" + regexString + "\\s-\\s)", "m");
 
 const input = document.getElementById('input')
 const downloadLink = document.getElementById('download-link')
@@ -8,7 +39,7 @@ input.addEventListener('change', handleChange)
 
 var allow = true;
 
-// A function to check weither the uploaded file is a text file or not
+// A function to check whether the uploaded file is a text file or not
 function inputType() {
     if (document.getElementById('input').files[0].type.match('text/plain')) {
         allow = true
@@ -71,9 +102,6 @@ function updateDownloadLink(url) {
 
 // Our main function where we get the file content as an input and then output the index.html content
 function convertFile(contents) {
-    // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
-	var regex = /(?:[\r\n]*)(?=^\d{1,2}\/\d{1,2}\/[1-9][0-9],\s\d{1,2}:\d{1,2}\s[PA]?[M]?\s?-\s)/m;
-
     // export dates and put them in an array
     var date = (function() {
         var arr = [];
