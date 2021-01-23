@@ -1,5 +1,49 @@
+/* -------------------------------------------------- INPUT SETTINGS -------------------------------------------------- */
+/*
+Set the date format of your export here.
+Available placeholders:
+  DD - Day of a month (01 - 31)
+  MM - Number of a month (01 - 12)
+  YY - Last two digits of a year (00 - 99)
+  HH - Hours in both 12-hour or 24-hour format (00-23)
+  mm - Minutes (00-59)
+  AA - Ante meridiem and Post meridiem (AM or PM)
+  aa - Same as AA, but works if the " AM" or " PM" strings (space before them including) are missing too
+Do you need placeholders for different values? Submit an issue.
+*/
+const dateFormat = "DD/MM/YY, HH:mm aa"
+
+/*
+Set the string marking an attached media file.
+You can find it by searching for a message with an image attached in the exported .txt file
+The message will probably look something like this:
+  15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
+In this case, you are looking for that "file attached" string
+Of course, the string will be different in other languages
+You need to copy the version occuring in your export and replace the value of the constant below with it
+*/
+const fileAttachedString = "file attached"
+
+/* ---------------------------------------------- END OF INPUT SETTINGS ----------------------------------------------- */
+
 // 4YM4N3 - 2019 // 
 console.log("App has launched!")
+
+//Process the date format into a regex
+var regexString = dateFormat;
+regexString = regexString.replaceAll(' ', '\\s');
+regexString = regexString.replaceAll('/', '\\/');
+regexString = regexString.replaceAll('\\saa', '\\s?[PA]?[M]?');
+regexString = regexString.replaceAll('aa', ' [PA]?[M]?');
+regexString = regexString.replaceAll('AA', '[PA][M]');
+regexString = regexString.replaceAll('mm', '\\d{1,2}');
+regexString = regexString.replaceAll('HH', '\\d{1,2}');
+regexString = regexString.replaceAll('DD', '\\d{1,2}');
+regexString = regexString.replaceAll('MM', '\\d{1,2}');
+regexString = regexString.replaceAll('YY', '[1-9][0-9]');
+
+// Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
+var regex = new RegExp("(?:[\\r\\n]*)(?=^" + regexString + "\\s-\\s)", "m");
 
 const input = document.getElementById('input')
 const downloadLink = document.getElementById('download-link')
@@ -8,7 +52,7 @@ input.addEventListener('change', handleChange)
 
 var allow = true;
 
-// A function to check weither the uploaded file is a text file or not
+// A function to check whether the uploaded file is a text file or not
 function inputType() {
     if (document.getElementById('input').files[0].type.match('text/plain')) {
         allow = true
@@ -71,9 +115,6 @@ function updateDownloadLink(url) {
 
 // Our main function where we get the file content as an input and then output the index.html content
 function convertFile(contents) {
-    // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
-	var regex = /(?:[\r\n]*)(?=^\d{1,2}\/\d{1,2}\/[1-9][0-9],\s\d{1,2}:\d{1,2}\s[PA]?[M]?\s?-\s)/m;
-
     // export dates and put them in an array
     var date = (function() {
         var arr = [];
@@ -135,10 +176,10 @@ function convertFile(contents) {
                 classe = "darker" // one user should have this class so their container have a different styling
             }
             try {
-                hasOpus = messages[i].search(".opus"); // search if the message contain an audio file
-                hasFileAttached = messages[i].search("(file attached)"); // search if the message contain (file attached)
-                hasJpg = messages[i].search(".jpg");  // search if the message contain a picture
-                hasMp4 = messages[i].search(".mp4");  // search if the message contain a video
+                hasOpus = messages[i].indexOf(".opus (" + fileAttachedString + ")"); // search if the message contain an audio file
+                hasFileAttached = messages[i].indexOf("(" + fileAttachedString + ")"); // search if the message contain an attached file
+                hasJpg = messages[i].indexOf(".jpg (" + fileAttachedString + ")");  // search if the message contain a picture
+                hasMp4 = messages[i].indexOf(".mp4 (" + fileAttachedString + ")");  // search if the message contain a video
             } catch (err) {
                 console.log("OK")
             }
@@ -146,19 +187,23 @@ function convertFile(contents) {
                 html = '<div class="container"><div>' + usernames[i] + '</div> <div class="date">' + date[i] + '</div> </div>'
             } else if (hasOpus != -1 && hasFileAttached != -1) { // handle message when it contains audio file
 
-                mediaFile = messages[i].split('.opus (file attached)');
-
+                mediaFile = messages[i].split('.opus (' + fileAttachedString + ')');
+				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
 
                 html = '<div class="container ' + classe + '"> <div class="username">' + usernames[i] + '</div> <audio controls> <source src="' + mediaFile[0] + '.opus" type="audio/ogg"> </audio> <div class="date">' + date[i] + '</div> </div>'
 
-
             } else if (hasFileAttached != -1 && hasJpg != -1) { // handle message when it contains picture
-                mediaFile = messages[i].split('.jpg (file attached)');
-
+                mediaFile = messages[i].split('.jpg (' + fileAttachedString + ')');
+				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
+				
                 html = '<div class="container ' + classe + '"><div class="username">' + usernames[i] + '</div> <div> <a href="' + mediaFile[0] + '.jpg" target="_blank"><img src="' + mediaFile[0] + '.jpg" alt=""></a> </div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>'
 
             } else if (hasFileAttached != -1 && hasMp4 != -1) { // handle message when it contains a video file
-                mediaFile = messages[i].split('.mp4 (file attached)');
+                mediaFile = messages[i].split('.mp4 (' + fileAttachedString + ')');
+				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
 
                 html = '<div class="container ' + classe + '"> <div class="username"><pre>' + usernames[i] + '     <a href="' + mediaFile[0] + '.mp4" target="_blank">Open video in a new window</a></pre></div> <div><video width="250" controls><source src="' + mediaFile[0] + '.mp4" alt=""></video></div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>';
 
