@@ -22,7 +22,7 @@ In this case, you are looking for that "file attached" string
 Of course, the string will be different in other languages
 You need to copy the version occuring in your export and replace the value of the constant below with it
 */
-const fileAttachedString = "soubor byl přiložen"
+const fileAttachedString = "file attached"
 
 /* ---------------------------------------------- END OF INPUT SETTINGS ----------------------------------------------- */
 
