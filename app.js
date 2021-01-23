@@ -1,4 +1,4 @@
-//LOCALIZATION SETTINGS
+/* -------------------------------------------------- INPUT SETTINGS -------------------------------------------------- */
 /*
 Set the date format of your export here.
 Available placeholders:
@@ -23,6 +23,8 @@ Of course, the string will be different in other languages
 You need to copy the version occuring in your export and replace the value of the constant below with it
 */
 const fileAttachedString = "soubor byl přiložen"
+
+/* ---------------------------------------------- END OF INPUT SETTINGS ----------------------------------------------- */
 
 // 4YM4N3 - 2019 // 
 console.log("App has launched!")
