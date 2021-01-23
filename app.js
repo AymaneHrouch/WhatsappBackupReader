@@ -13,6 +13,17 @@ Do you need placeholders for different values? Submit an issue.
 */
 const dateFormat = "DD/MM/YY, HH:mm aa"
 
+/*
+Set the string marking an attached media file.
+You can find it by searching for a message with an image attached in the exported .txt file
+The message will probably look something like this:
+  15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
+In this case, you are looking for that "file attached" string
+Of course, the string will be different in other languages
+You need to copy the version occuring in your export and replace the value of the constant below with it
+*/
+const fileAttachedString = "soubor byl přiložen"
+
 // 4YM4N3 - 2019 // 
 console.log("App has launched!")
 
@@ -163,10 +174,10 @@ function convertFile(contents) {
                 classe = "darker" // one user should have this class so their container have a different styling
             }
             try {
-                hasOpus = messages[i].search(".opus"); // search if the message contain an audio file
-                hasFileAttached = messages[i].search("(file attached)"); // search if the message contain (file attached)
-                hasJpg = messages[i].search(".jpg");  // search if the message contain a picture
-                hasMp4 = messages[i].search(".mp4");  // search if the message contain a video
+                hasOpus = messages[i].indexOf(".opus (" + fileAttachedString + ")"); // search if the message contain an audio file
+                hasFileAttached = messages[i].indexOf("(" + fileAttachedString + ")"); // search if the message contain an attached file
+                hasJpg = messages[i].indexOf(".jpg (" + fileAttachedString + ")");  // search if the message contain a picture
+                hasMp4 = messages[i].indexOf(".mp4 (" + fileAttachedString + ")");  // search if the message contain a video
             } catch (err) {
                 console.log("OK")
             }
@@ -174,21 +185,21 @@ function convertFile(contents) {
                 html = '<div class="container"><div>' + usernames[i] + '</div> <div class="date">' + date[i] + '</div> </div>'
             } else if (hasOpus != -1 && hasFileAttached != -1) { // handle message when it contains audio file
 
-                mediaFile = messages[i].split('.opus (file attached)');
+                mediaFile = messages[i].split('.opus (' + fileAttachedString + ')');
 				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
 				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
 
                 html = '<div class="container ' + classe + '"> <div class="username">' + usernames[i] + '</div> <audio controls> <source src="' + mediaFile[0] + '.opus" type="audio/ogg"> </audio> <div class="date">' + date[i] + '</div> </div>'
 
             } else if (hasFileAttached != -1 && hasJpg != -1) { // handle message when it contains picture
-                mediaFile = messages[i].split('.jpg (file attached)');
+                mediaFile = messages[i].split('.jpg (' + fileAttachedString + ')');
 				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
 				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
 				
                 html = '<div class="container ' + classe + '"><div class="username">' + usernames[i] + '</div> <div> <a href="' + mediaFile[0] + '.jpg" target="_blank"><img src="' + mediaFile[0] + '.jpg" alt=""></a> </div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>'
 
             } else if (hasFileAttached != -1 && hasMp4 != -1) { // handle message when it contains a video file
-                mediaFile = messages[i].split('.mp4 (file attached)');
+                mediaFile = messages[i].split('.mp4 (' + fileAttachedString + ')');
 				mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ''); //remove left-to-right text mark that would break link to the file
 				mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ''); //remove right-to-left text mark that would break link to the file
 
