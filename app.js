@@ -175,18 +175,22 @@ function convertFile(contents) {
             } else if (hasOpus != -1 && hasFileAttached != -1) { // handle message when it contains audio file
 
                 mediaFile = messages[i].split('.opus (file attached)');
-
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&lrm;") + 2); //Remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&rlm;") + 2); //Remove right-to-left text mark that would break link to the file
 
                 html = '<div class="container ' + classe + '"> <div class="username">' + usernames[i] + '</div> <audio controls> <source src="' + mediaFile[0] + '.opus" type="audio/ogg"> </audio> <div class="date">' + date[i] + '</div> </div>'
 
-
             } else if (hasFileAttached != -1 && hasJpg != -1) { // handle message when it contains picture
                 mediaFile = messages[i].split('.jpg (file attached)');
-
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&lrm;") + 2); //Remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&rlm;") + 2); //Remove right-to-left text mark that would break link to the file
+				
                 html = '<div class="container ' + classe + '"><div class="username">' + usernames[i] + '</div> <div> <a href="' + mediaFile[0] + '.jpg" target="_blank"><img src="' + mediaFile[0] + '.jpg" alt=""></a> </div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>'
 
             } else if (hasFileAttached != -1 && hasMp4 != -1) { // handle message when it contains a video file
                 mediaFile = messages[i].split('.mp4 (file attached)');
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&lrm;") + 2); //Remove left-to-right text mark that would break link to the file
+				mediaFile[0] = mediaFile[0].substring(mediaFile[0].indexOf("&rlm;") + 2); //Remove right-to-left text mark that would break link to the file
 
                 html = '<div class="container ' + classe + '"> <div class="username"><pre>' + usernames[i] + '     <a href="' + mediaFile[0] + '.mp4" target="_blank">Open video in a new window</a></pre></div> <div><video width="250" controls><source src="' + mediaFile[0] + '.mp4" alt=""></video></div> <div>' + mediaFile[1] + '</div> <div class="date">' + date[i] + '</div> </div>';
 
