@@ -54,7 +54,7 @@ function setRegex() {
     .replaceAll("YYYY", "[1-9][0-9][0-9][0-9]")
     .replaceAll("YY", "[1-9][0-9]");
   // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
-  return new RegExp("(?:[\\r\\n]*)(?=^" + regexString + "\\s-\\s)", "m");
+  return new RegExp(`(?:[\\r\\n]*)(?=^${regexString}\\s-\\s)`, "m");
 }
 
 const input = document.getElementById("input");
@@ -79,8 +79,9 @@ document.querySelector("#input").addEventListener("change", function (e) {
   if (allow) {
     var fileName = e.target.value.split("\\").pop();
     if (fileName) {
-      document.getElementsByTagName("label")[0].innerHTML =
-        "<strong>" + fileName + "</strong>";
+      document.getElementsByTagName(
+        "label"
+      )[0].innerHTML = `<strong>${fileName}</strong>`;
     } else {
       console.log("error");
     }
@@ -186,7 +187,54 @@ function convertFile(contents) {
   // join all the components
   var main = (function () {
     var arr = [
-      '<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <title>Backup by WBR</title> <style> body{background-color: #cce6ff; } .container {border: 2px solid #dedede; background-color: #d4fac7; border-radius: 5px; padding: 10px; font-family: Segoe UI; letter-spacing: 0.5px; padding-bottom: 23px; max-width: 600px; margin: auto; margin-bottom: 10px; } .darker {border-color: #ccc; background-color: #b7f7a1; } .darker .username{border-color: #ccc; } .username {width: 100%; padding-bottom: 10px; border-bottom: 1px solid #dadde1; color: black; font-size: 18px; font-weight: bold; line-height: 18px; margin-bottom: 12px; letter-spacing: 1px; } audio {width: 100%; } .date {border-top: 1px solid #dadde1; float: right; color: #aaa; margin: 2px; } .container img {width: 350px; } .footer{margin: auto; max-width: 600px; color:#7f7f7f; text-align: center; } </style> </head> <body>',
+      `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head> 
+      <meta charset="UTF-8">
+      <title>Backup by WBR</title>
+      <style>
+        body{background-color: #cce6ff; } 
+        .container {
+          border: 2px solid #dedede; 
+          background-color: #d4fac7; 
+          border-radius: 5px; padding: 10px; 
+          font-family: Segoe UI; letter-spacing: 0.5px; 
+          padding-bottom: 23px; 
+          max-width: 600px; 
+          margin: auto; margin-bottom: 10px; 
+        } 
+        .darker {
+          border-color: #ccc; 
+          background-color: #b7f7a1; 
+        } .darker 
+        .username{border-color: #ccc; 
+        } 
+        .username {
+          width: 100%; 
+          padding-bottom: 10px; 
+          border-bottom: 1px solid #dadde1; 
+          color: black; font-size: 18px; 
+          font-weight: bold; 
+          line-height: 18px; 
+          margin-bottom: 12px; 
+          letter-spacing: 1px; 
+        } audio {width: 100%; } 
+        .date {border-top: 1px solid #dadde1; 
+          float: right; 
+          color: #aaa; 
+          margin: 2px; 
+        } 
+        .container img {
+          width: 350px; 
+        } .footer{margin: auto; 
+          max-width: 600px; 
+          color:#7f7f7f; 
+          text-align: center; 
+        } 
+      </style>
+    </head>
+    <body>`,
     ];
     let unique = [...new Set(usernames)]; // Array of usernames, it should contain just two elements
     var userOne = unique[1];
@@ -200,90 +248,66 @@ function convertFile(contents) {
         classe = "darker"; // one user should have this class so their container have a different styling
       }
       try {
-        hasOpus = messages[i].indexOf(".opus (" + fileAttachedString + ")"); // search if the message contain an audio file
-        hasFileAttached = messages[i].indexOf("(" + fileAttachedString + ")"); // search if the message contain an attached file
-        hasJpg = messages[i].indexOf(".jpg (" + fileAttachedString + ")"); // search if the message contain a picture
-        hasMp4 = messages[i].indexOf(".mp4 (" + fileAttachedString + ")"); // search if the message contain a video
+        hasOpus = messages[i].indexOf(`.opus (${fileAttachedString})`); // search if the message contain an audio file
+        hasFileAttached = messages[i].indexOf(`(${fileAttachedString})`); // search if the message contain an attached file
+        hasJpg = messages[i].indexOf(`.jpg (${fileAttachedString})`); // search if the message contain a picture
+        hasMp4 = messages[i].indexOf(`.mp4 (${fileAttachedString})`); // search if the message contain a video
       } catch (err) {
         console.log("OK");
       }
       if (messages[i] == undefined) {
         // if message is empty
-        html =
-          '<div class="container"><div>' +
-          usernames[i] +
-          '</div> <div class="date">' +
-          date[i] +
-          "</div> </div>";
+        html = `
+        <div class="container">
+          <div>${usernames[i]}</div> 
+          <div class="date">${date[i]}</div>
+        </div>`;
       } else if (hasOpus != -1 && hasFileAttached != -1) {
         // handle message when it contains audio file
 
-        mediaFile = messages[i].split(".opus (" + fileAttachedString + ")");
+        mediaFile = messages[i].split(`.opus (${fileAttachedString})`);
         mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
         mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
 
-        html =
-          '<div class="container ' +
-          classe +
-          '"> <div class="username">' +
-          usernames[i] +
-          '</div> <audio controls> <source src="' +
-          mediaFile[0] +
-          '.opus" type="audio/ogg"> </audio> <div class="date">' +
-          date[i] +
-          "</div> </div>";
+        html = `
+        <div class="container ${classe}">
+          <div class="username">${usernames[i]}</div> 
+          <audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio> 
+          <div class="date">${date[i]}</div>
+        </div>`;
       } else if (hasFileAttached != -1 && hasJpg != -1) {
         // handle message when it contains picture
-        mediaFile = messages[i].split(".jpg (" + fileAttachedString + ")");
+        mediaFile = messages[i].split(`.jpg (${fileAttachedString})`);
         mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
         mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
 
-        html =
-          '<div class="container ' +
-          classe +
-          '"><div class="username">' +
-          usernames[i] +
-          '</div> <div> <a href="' +
-          mediaFile[0] +
-          '.jpg" target="_blank"><img src="' +
-          mediaFile[0] +
-          '.jpg" alt=""></a> </div> <div>' +
-          mediaFile[1] +
-          '</div> <div class="date">' +
-          date[i] +
-          "</div> </div>";
+        html = `
+        <div class="container ${classe}">
+          <div class="username">${usernames[i]}</div> 
+          <div> <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a> </div> 
+          <div>${mediaFile[1]}</div> <div class="date">${date[i]}</div> 
+        </div>`;
       } else if (hasFileAttached != -1 && hasMp4 != -1) {
         // handle message when it contains a video file
-        mediaFile = messages[i].split(".mp4 (" + fileAttachedString + ")");
+        mediaFile = messages[i].split(`.mp4 (${fileAttachedString})`);
         mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
         mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
 
-        html =
-          '<div class="container ' +
-          classe +
-          '"> <div class="username"><pre>' +
-          usernames[i] +
-          '     <a href="' +
-          mediaFile[0] +
-          '.mp4" target="_blank">Open video in a new window</a></pre></div> <div><video width="250" controls><source src="' +
-          mediaFile[0] +
-          '.mp4" alt=""></video></div> <div>' +
-          mediaFile[1] +
-          '</div> <div class="date">' +
-          date[i] +
-          "</div> </div>";
+        html = `
+        <div class="container ${classe}">
+          <div class="username">
+            <pre>${usernames[i]}     <a href="${mediaFile[0]}.mp4" target="_blank">Open video in a new window</a></pre>
+          </div> 
+          <div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>
+           <div>${mediaFile[1]}</div> <div class="date">${date[i]}</div> 
+        </div>`;
       } else {
         // handle message when it does NOT contain any media
-        html =
-          '<div class="container ' +
-          classe +
-          '"> <div class="username">' +
-          usernames[i] +
-          "</div> <div>" +
-          messages[i] +
-          '</div> <div class="date">' +
-          date[i] +
-          "</div> </div>";
+        html = `
+        <div class="container ${classe}">
+          <div class="username">${usernames[i]}</div>
+          <div>${messages[i]}</div> <div class="date">${date[i]}</div> 
+        </div>`;
       }
       arr.push(html);
     }
@@ -315,19 +339,15 @@ function convertFile(contents) {
     ];
 
     arr.push(
-      '<div class="footer">Generated on ' +
-        days[dateOfGenerating.getDay()] +
-        ", " +
-        months[dateOfGenerating.getMonth()] +
-        " " +
-        dateOfGenerating.getDate() +
-        ", " +
-        dateOfGenerating.getFullYear() +
-        " at " +
-        dateOfGenerating.getHours() +
-        ":" +
-        dateOfGenerating.getMinutes() +
-        '<br>All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; 2019</div> </body>'
+      `
+        <div class="footer">
+        Generated on ${days[dateOfGenerating.getDay()]}, ${
+        months[dateOfGenerating.getMonth()]
+      } ${dateOfGenerating.getDate()}, ${dateOfGenerating.getFullYear()} at ${dateOfGenerating.getHours()}:${dateOfGenerating.getMinutes()}<br />
+        All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; 2019
+        </div> 
+      </body>
+  </html>`
     );
     arr = arr.join("\n");
     return arr;
