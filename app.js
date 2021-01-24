@@ -193,7 +193,6 @@ function convertFile(contents) {
 
     for (i = 0; i < date.length; i++) {
       var classe = "",
-        direction = "right",
         mediaFile = "";
       var hasOpus = -1,
         hasFileAttached = -1;
