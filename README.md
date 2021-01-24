@@ -13,6 +13,6 @@ You can use it from [HERE](http://jspractice666.000webhostapp.com/)
 
 You can also check this [DEMONSTRATION VIDEO](https://www.youtube.com/watch?v=bcFvHOYVUHk) on Youtube.
 
-Please note that this application is set to work with exports in English by default. That means that if the messages in your export are marked with timestamps in a different time format and the presence of files is marked by something different than "file attached", you need to edit two constants on the first few lines in the `app.js` file.
+Please note that this application is set to work with exports in English by default. That means that if the messages in your export are marked with timestamps in a different time format and the presence of files is marked by something different than "file attached", you need to set the date format and the equivalent of "file attached" in your language by using the button located at the footer
 
 Hope you like it!
