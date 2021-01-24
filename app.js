@@ -11,7 +11,7 @@ function setFormat() {
         DD - Day of a month (01 - 31)
         MM - Number of a month (01 - 12)
         YY - Last two digits of a year (00 - 99)
-        YYYY - Full year (four digits) 
+        YYYY - Full year/Four digits (1000 - 9999) 
         HH - Hours in both 12-hour or 24-hour format (00-23)
         mm - Minutes (00-59)
         AA - Ante meridiem and Post meridiem (AM or PM)
