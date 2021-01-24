@@ -29,7 +29,7 @@ function setFormat() {
             15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
             In this case, you are looking for that "file attached" string
             Of course, the string will be different in other languages
-            You need to copy the version occuring in your export and replace the value of the constant below with it`,
+            You need to copy the version occuring in your export into the field below`,
     "file attached"
   );
 }
