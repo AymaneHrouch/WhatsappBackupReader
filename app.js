@@ -47,10 +47,7 @@ function setRegex() {
     .replaceAll("\\saa", "\\s?[PA]?[M]?")
     .replaceAll("aa", " [PA]?[M]?")
     .replaceAll("AA", "[PA][M]")
-    .replaceAll("mm", "\\d{1,2}")
-    .replaceAll("HH", "\\d{1,2}")
-    .replaceAll("DD", "\\d{1,2}")
-    .replaceAll("MM", "\\d{1,2}")
+    .replaceAll(/mm|HH|DD|MM/g, "\\d{1,2}")
     .replaceAll("YYYY", "[1-9][0-9][0-9][0-9]")
     .replaceAll("YY", "[1-9][0-9]");
   // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
