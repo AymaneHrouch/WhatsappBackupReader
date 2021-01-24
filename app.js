@@ -323,7 +323,7 @@ function convertFile(contents) {
         dateOfGenerating.getHours() +
         ":" +
         dateOfGenerating.getMinutes() +
-        '<br>All rights reserved to <a href="http://cwmn.000webhostapp.com/WBR/" target="_blank">WBR</a> &copy; 2019</div> </body>'
+        '<br>All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; 2019</div> </body>'
     );
     arr = arr.join("\n");
     return arr;
