@@ -1,8 +1,8 @@
 /* -------------------------------------------------- INPUT SETTINGS -------------------------------------------------- */
 
-let dateFormat = "DD/MM/YYYY à HH:mm aa";
+let dateFormat = "DD/MM/YY, HH:mm aa";
 
-let fileAttachedString = "fichier joint";
+let fileAttachedString = "file attached";
 
 function setFormat() {
   dateFormat = prompt(
