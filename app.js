@@ -126,7 +126,10 @@ function updateDownloadLink(url) {
 }
 
 const include = str => {
-  if (!str) return null;
+  if (!str) {
+    console.log("hh");
+    return null;
+  }
 
   let arr = ["opus", "jpg", "mp4"];
   for (extension in arr)
@@ -140,6 +143,37 @@ const getMediaFile = (message, extension) => {
   mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
   mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
   return mediaFile;
+};
+
+const genDate = () => {
+  const d = new Date();
+  var months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  var days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  return `${days[d.getDay()]}, ${
+    months[d.getMonth()]
+  } ${d.getDate()}, ${d.getFullYear()} at ${d.getHours()}:${d.getMinutes()}`;
 };
 
 // Our main function where we get the file content as an input and then output the index.html content
@@ -251,31 +285,33 @@ function convertFile(contents) {
     <body>`,
     ];
     let unique = [...new Set(usernames)]; // Array of usernames, it should contain just two elements
-    var userOne = unique[1];
+    console.log("usernames", usernames);
+    var userOne = unique[unique.length - 1];
 
+    let body = "";
     for (i = 0; i < date.length; i++) {
-      var classe = "";
-      mediaFile = "";
-      var hasOpus = -1;
+      let classe = "";
       if (usernames[i] == userOne) classe = "darker"; // one user should have this class so their container have a different styling
 
       let extension = include(messages[i]);
       switch (extension) {
         case "opus":
-          mediaFile = getMediaFile(messages[i], "opus");
+          mediaFile = getMediaFile(messages[i], extension);
           body = `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
           break;
         case "jpg":
-          mediaFile = getMediaFile(messages[i], "jpg");
+          mediaFile = getMediaFile(messages[i], extension);
           body = `<div> <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a> </div> 
             <div>${mediaFile[1]}</div>`;
           break;
         case "mp4":
-          mediaFile = getMediaFile(messages[i], "mp4");
-          body = `<div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>`;
+          mediaFile = getMediaFile(messages[i], extension);
+          body = `
+          <a href="${mediaFile[0]}.mp4" target="_blank" style="display: block;">Open video in a new tab</a>
+          <div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>`;
           break;
         default:
-          body = `<div>${messages[i]}</div>`;
+          if (messages[i]) body = messages[i] && `<div>${messages[i]}</div>`;
           break;
       }
 
@@ -288,38 +324,10 @@ function convertFile(contents) {
       arr.push(html);
     }
 
-    var dateOfGenerating = new Date(); // get date of generating the exported chat!
-
-    var months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    var days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-
     arr.push(
       `
         <div class="footer">
-        Generated on ${days[dateOfGenerating.getDay()]}, ${
-        months[dateOfGenerating.getMonth()]
-      } ${dateOfGenerating.getDate()}, ${dateOfGenerating.getFullYear()} at ${dateOfGenerating.getHours()}:${dateOfGenerating.getMinutes()}<br />
+        Generated on ${genDate()}<br />
         All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; 2019
         </div> 
       </body>
