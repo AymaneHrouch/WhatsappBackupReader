@@ -1,10 +1,42 @@
-/* -------------------------------------------------- INPUT SETTINGS -------------------------------------------------- */
+/* --------------------------------------------------  INPUT HANDLING -------------------------------------------------- */
+const input = document.getElementById("input");
+const downloadLink = document.getElementById("download-link");
+input.addEventListener("change", handleChange);
+let allow = true;
+
+// Function to read the text file and get the text inside it, returns a Promise so we can use it in handleChange()
+const readFile = file => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = reject;
+  });
+};
+
+// After we finish our operations we have to create a download link
+const createDownloadableUrl = contents => {
+  const textBlob = new Blob([contents], {
+    type: "text/plain",
+  });
+  return URL.createObjectURL(textBlob);
+};
+
+// function to set the downloading link to the button and then make it appear
+const updateDownloadLink = url => {
+  downloadLink.href = url;
+  downloadLink.hidden = false;
+};
+
+/* -------------------------------------------------- CONSTANTS & GLOBAL VARS HANDLING -------------------------------------------------- */
 
 let dateFormat = "DD/MM/YY, HH:mm aa";
-
 let fileAttachedString = "file attached";
 
-function setFormat() {
+// Function to help users set custom dateFormat and fileAttachedString for non-English exports
+const setFormat = () => {
   dateFormat = prompt(
     `Set the date format of your export here.
         Available placeholders:
@@ -16,7 +48,7 @@ function setFormat() {
         mm - Minutes (00-59)
         AA - Ante meridiem and Post meridiem (AM or PM)
         aa - Same as AA, but works if the "AM" or " PM" strings (space before them including) are missing too
-
+        
         (Eg. for French the date format is: DD/MM/YYYY à HH:mm aa)
         Do you need placeholders for different values? Submit an issue.`,
     "DD/MM/YY, HH:mm aa"
@@ -24,117 +56,21 @@ function setFormat() {
 
   fileAttachedString = prompt(
     `Set the string marking an attached media file.
-            You can find it by searching for a message with an image attached in the exported .txt file
-            The message will probably look something like this:
-            15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
-            In this case, you are looking for that "file attached" string
-            Of course, the string will be different in other languages
-            You need to copy the version occuring in your export into the field below`,
+    You can find it by searching for a message with an image attached in the exported .txt file
+    The message will probably look something like this:
+    15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
+    In this case, you are looking for that "file attached" string
+    Of course, the string will be different in other languages
+    You need to copy the version occuring in your export into the field below`,
     "file attached"
   );
-}
-
-/* ---------------------------------------------- END OF INPUT SETTINGS ----------------------------------------------- */
-
-// 4YM4N3 - 2019 //
-console.log("App has launched!");
-
-//Process the date format into a regex
-function setRegex() {
-  regexString = dateFormat
-    .replaceAll(" ", "\\s")
-    .replaceAll("/", "\\/")
-    .replaceAll("\\saa", "\\s?[PA]?[M]?")
-    .replaceAll("aa", " [PA]?[M]?")
-    .replaceAll("AA", "[PA][M]")
-    .replaceAll(/mm|HH|DD|MM/g, "\\d{1,2}")
-    .replaceAll("YYYY", "[1-9][0-9][0-9][0-9]")
-    .replaceAll("YY", "[1-9][0-9]");
-  // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here
-  return new RegExp(`(?:[\\r\\n]*)(?=^${regexString}\\s-\\s)`, "m");
-}
-
-const input = document.getElementById("input");
-const downloadLink = document.getElementById("download-link");
-input.addEventListener("change", inputType);
-input.addEventListener("change", handleChange);
-
-var allow = true;
-
-// A function to check whether the uploaded file is a text file or not
-function inputType() {
-  if (document.getElementById("input").files[0].type.match("text/plain")) {
-    allow = true;
-  } else {
-    allow = false;
-  }
-  return 0;
-}
-
-// extracting the title of the uploaded file to display it instead of "Upload file..."
-document.querySelector("#input").addEventListener("change", function (e) {
-  if (allow) {
-    var fileName = e.target.value.split("\\").pop();
-    if (fileName) {
-      document.getElementsByTagName(
-        "label"
-      )[0].innerHTML = `<strong>${fileName}</strong>`;
-    } else {
-      console.log("error");
-    }
-  }
-});
-
-// Function to handle change of the input
-function handleChange(event) {
-  if (!event.target.files || !allow) {
-    // if the file doesn't exist or it's not a text file
-    alert("You didn't upload a text file, please try again.");
-    return;
-  }
-
-  readFile(event.target.files[0]).then(contents => {
-    const convertedFile = convertFile(contents);
-    updateDownloadLink(createDownloadableUrl(convertedFile));
-  });
-}
-
-// Function to read the text file and get the text inside it, returns a Promise so we can use it in handleChange()
-function readFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-    reader.onerror = reject;
-  });
-}
-
-// After we finish our operations we have to create a download link
-function createDownloadableUrl(contents) {
-  const textBlob = new Blob([contents], {
-    type: "text/plain",
-  });
-  return URL.createObjectURL(textBlob);
-}
-
-// function to set the downloading link to the button and then make it appear
-function updateDownloadLink(url) {
-  downloadLink.href = url;
-  downloadLink.hidden = false;
-}
-
-const extension = message => {
-  if (!message) return null;
-
-  let arr = ["opus", "jpg", "mp4"];
-  for (ext in arr)
-    if (message.includes(`.${arr[ext]} (${fileAttachedString})`))
-      return arr[ext];
-  return null;
 };
 
+/* Generate date of parsing*/
+// Function to generate a leading zero
+const pad = n => (n < 10 ? `0${n}` : n);
+
+// Function to generate string containing the date of parsing
 const genDate = () => {
   const d = new Date();
   var months = [
@@ -163,16 +99,150 @@ const genDate = () => {
 
   return `${days[d.getDay()]}, ${
     months[d.getMonth()]
-  } ${d.getDate()}, ${d.getFullYear()} at ${d.getHours()}:${d.getMinutes()}`;
+  } ${d.getDate()}, ${d.getFullYear()} at ${pad(d.getHours())}:${pad(
+    d.getMinutes()
+  )}`;
+};
+
+const htmlHeader = `
+<!DOCTYPE html>
+<html lang="en">
+  <head> 
+    <meta charset="UTF-8">
+    <title>Backup by WBR</title>
+    <style>
+      body{background-color: #cce6ff; } 
+      .container {
+        border: 2px solid #dedede; 
+        background-color: #d4fac7; 
+        border-radius: 5px; padding: 10px; 
+        font-family: Segoe UI; letter-spacing: 0.5px; 
+        padding-bottom: 23px; 
+        max-width: 600px; 
+        margin: auto; margin-bottom: 10px; 
+      } 
+      .darker {
+        border-color: #ccc; 
+        background-color: #b7f7a1; 
+      } .darker 
+      .username{border-color: #ccc; 
+      } 
+      .username {
+        width: 100%; 
+        padding-bottom: 10px; 
+        border-bottom: 1px solid #dadde1; 
+        color: black; font-size: 18px; 
+        font-weight: bold; 
+        line-height: 18px; 
+        margin-bottom: 12px; 
+        letter-spacing: 1px; 
+      } audio {width: 100%; } 
+      .date {border-top: 1px solid #dadde1; 
+        float: right; 
+        color: #aaa; 
+        margin: 2px; 
+      } 
+      .container img {
+        width: 350px; 
+      } .footer{margin: auto; 
+        max-width: 600px; 
+        color:#7f7f7f; 
+        text-align: center; 
+      } 
+    </style>
+  </head>
+  <body>`;
+
+const htmlFooter = `
+<div class="footer">
+Generated on ${genDate()}<br />
+All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; ${new Date().getFullYear()}
+</div> 
+</body>
+</html>`;
+
+/* --------------------------------------------------  GET COMPONENTS -------------------------------------------------- */
+
+const getDates = contents => {
+  const lines = contents.slice(0);
+  const arr = [];
+
+  for (i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].split("-");
+  }
+  for (i = 0; i < lines.length; i++) {
+    arr[i] = lines[i][0];
+  }
+  return arr;
+};
+
+// Process the date format into a regex
+const getRegex = () => {
+  regexString = dateFormat
+    .replaceAll(" ", "\\s")
+    .replaceAll("/", "\\/")
+    .replaceAll("\\saa", "\\s?[PA]?[M]?")
+    .replaceAll("aa", " [PA]?[M]?")
+    .replaceAll("AA", "[PA][M]")
+    .replaceAll(/mm|HH|DD|MM/g, "\\d{1,2}")
+    .replaceAll("YYYY", "[1-9][0-9][0-9][0-9]")
+    .replaceAll("YY", "[1-9][0-9]");
+  // Regex to detect the beginning of a line because of the pattern dd/mm/yy, hh:mm - Username: message here (for English)
+  return new RegExp(`(?:[\\r\\n]*)(?=^${regexString}\\s-\\s)`, "m");
+};
+
+const getMessages = contents => {
+  const lines = contents.slice(0);
+  const arr = [];
+
+  for (i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].split(": ");
+    arr[i] = lines[i][1];
+  }
+  return arr;
+};
+
+const getUsernames = contents => {
+  const lines = contents.slice(0);
+  var arr = [];
+
+  for (i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].split(": ");
+  }
+
+  for (i = 0; i < lines.length; i++) {
+    for (j = 0; j < lines[i].length; j++) {
+      lines[i][j] = lines[i][j].split("- ");
+    }
+  }
+
+  for (i = 0; i < lines.length; i++) {
+    arr[i] = lines[i][0][1];
+  }
+  return arr;
+};
+
+/* Function to check if the message contain a media file or not, if yes return the extension, else return null */
+const getExtension = message => {
+  let arr = ["opus", "jpg", "mp4"];
+  for (ext in arr)
+    if (message.includes(`.${arr[ext]} (${fileAttachedString})`))
+      return arr[ext];
+  return null;
 };
 
 const getBody = message => {
   if (!message) return "";
-  mediaFile = message.split(`.${extension} (${fileAttachedString})`);
-  mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-  mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
 
-  switch (extension(message)) {
+  let mediaFile;
+  const extension = getExtension(message);
+  if (extension) {
+    mediaFile = message.split(`.${extension} (${fileAttachedString})`);
+    mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
+    mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
+  }
+
+  switch (extension) {
     case "opus":
       return `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
     case "jpg":
@@ -192,150 +262,69 @@ const getBody = message => {
   }
 };
 
-// Our main function where we get the file content as an input and then output the index.html content
-function convertFile(contents) {
-  // export dates and put them in an array
-  var regex = setRegex();
-  var date = (function () {
-    var arr = [];
-    arrPerLine = contents
-      .split(regex)
-      .filter(Boolean)
-      .map(text => text.replace(/[\r\n]+/g, "<br>"));
+/* --------------------------------------------------  JOIN ALL COMPONENTS -------------------------------------------------- */
+/* ---------------- Our main function where we process the file content and return the output of index.html ---------------- */
+const convertFile = contents => {
+  const regex = getRegex();
 
-    for (i = 0; i < arrPerLine.length; i++) {
-      arrPerLine[i] = arrPerLine[i].split("-");
-    }
-    for (i = 0; i < arrPerLine.length; i++) {
-      arr[i] = arrPerLine[i][0];
-    }
-    return arr;
-  })();
+  /* Split text file using the appropriate regExp */
+  const splitted = contents
+    .split(regex)
+    .filter(Boolean)
+    .map(text => text.replace(/[\r\n]+/g, "<br>"));
 
-  // export the messages and put them in an array
-  var messages = (function () {
-    var arr = [];
-    arrPerLine = contents
-      .split(regex)
-      .filter(Boolean)
-      .map(text => text.replace(/[\r\n]+/g, "<br>"));
-    for (i = 0; i < arrPerLine.length; i++) {
-      arrPerLine[i] = arrPerLine[i].split(": ");
-      arr[i] = arrPerLine[i][1];
-    }
-    return arr;
-  })();
+  const dates = getDates(splitted);
+  const messages = getMessages(splitted);
+  const usernames = getUsernames(splitted);
+  const html = [htmlHeader];
 
-  // export usernames
-  var usernames = (function () {
-    var arr = [];
-    arrPerLine = contents
-      .split(regex)
-      .filter(Boolean)
-      .map(text => text.replace(/[\r\n]+/g, "<br>"));
-    for (i = 0; i < arrPerLine.length; i++) {
-      arrPerLine[i] = arrPerLine[i].split(": ");
-    }
-    for (i = 0; i < arrPerLine.length; i++) {
-      for (j = 0; j < arrPerLine[i].length; j++) {
-        arrPerLine[i][j] = arrPerLine[i][j].split("- ");
-      }
-    }
-
-    for (i = 0; i < arrPerLine.length; i++) {
-      arr[i] = arrPerLine[i][0][1];
-    }
-    return arr;
-  })();
-
-  // join all the components
-  var main = (function () {
-    var arr = [
-      `
-  <!DOCTYPE html>
-  <html lang="en">
-    <head> 
-      <meta charset="UTF-8">
-      <title>Backup by WBR</title>
-      <style>
-        body{background-color: #cce6ff; } 
-        .container {
-          border: 2px solid #dedede; 
-          background-color: #d4fac7; 
-          border-radius: 5px; padding: 10px; 
-          font-family: Segoe UI; letter-spacing: 0.5px; 
-          padding-bottom: 23px; 
-          max-width: 600px; 
-          margin: auto; margin-bottom: 10px; 
-        } 
-        .darker {
-          border-color: #ccc; 
-          background-color: #b7f7a1; 
-        } .darker 
-        .username{border-color: #ccc; 
-        } 
-        .username {
-          width: 100%; 
-          padding-bottom: 10px; 
-          border-bottom: 1px solid #dadde1; 
-          color: black; font-size: 18px; 
-          font-weight: bold; 
-          line-height: 18px; 
-          margin-bottom: 12px; 
-          letter-spacing: 1px; 
-        } audio {width: 100%; } 
-        .date {border-top: 1px solid #dadde1; 
-          float: right; 
-          color: #aaa; 
-          margin: 2px; 
-        } 
-        .container img {
-          width: 350px; 
-        } .footer{margin: auto; 
-          max-width: 600px; 
-          color:#7f7f7f; 
-          text-align: center; 
-        } 
-      </style>
-    </head>
-    <body>`,
-    ];
-
-    /* An array of unique usernames, it should contain just two usernames and maybe something like 
+  /* 
+    An array of unique usernames, it should contain just two usernames and maybe something like 
     'Messages .... Tap for more info.
     our goal here is to extract one valid username and give it the class 'darker'
     so we could give it a different stylig
-    */
-    let unique = [...new Set(usernames)];
-    var userOne = unique[unique.length - 1]; // the user that will take the classe 'darker'
+  */
+  let uniqueUsernames = [...new Set(usernames)];
+  var userOne = uniqueUsernames[uniqueUsernames.length - 1]; // the user that will take the classe 'darker'
+  for (let i = 0; i < dates.length; i++) {
+    let classe = "";
+    if (usernames[i] == userOne) classe = "darker";
+    let body = getBody(messages[i]);
 
-    for (i = 0; i < date.length; i++) {
-      let classe = "";
-      if (usernames[i] == userOne) classe = "darker";
-
-      let body = getBody(messages[i], extension);
-
-      html = `
+    html.push(`
         <div class="container ${classe}">
           <div class="username">${usernames[i]}</div> 
           ${body}
-          <div class="date">${date[i]}</div>
-        </div>`;
-      arr.push(html);
-    }
+          <div class="date">${dates[i]}</div>
+        </div>`);
+  }
 
-    arr.push(
-      `
-        <div class="footer">
-        Generated on ${genDate()}<br />
-        All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane Hrouch</a> &copy; 2019
-        </div> 
-      </body>
-  </html>`
-    );
-    arr = arr.join("\n");
-    return arr;
-  })();
+  html.push(htmlFooter);
+  return html.join("\n");
+};
 
-  return main;
+// Function to handle change of the input
+function handleChange(event) {
+  // Check whether the uploaded file is a text file or not
+  allow = input.files[0].type.match("text/plain") ? true : false;
+
+  // Extracting the title of the uploaded file to display it instead of "Upload file..."
+  if (allow) {
+    var fileName = event.target.value.split("\\").pop();
+    if (fileName)
+      document.getElementsByTagName(
+        "label"
+      )[0].innerHTML = `<strong>${fileName}</strong>`;
+  }
+
+  if (!event.target.files || !allow) {
+    // if the file doesn't exist or it's not a text file
+    alert("You didn't upload a text file, please try again.");
+    return;
+  }
+
+  readFile(event.target.files[0]).then(contents => {
+    const convertedFile = convertFile(contents);
+    updateDownloadLink(createDownloadableUrl(convertedFile));
+  });
 }
