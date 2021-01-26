@@ -285,7 +285,6 @@ function convertFile(contents) {
     <body>`,
     ];
     let unique = [...new Set(usernames)]; // Array of usernames, it should contain just two elements
-    console.log("usernames", usernames);
     var userOne = unique[unique.length - 1];
 
     let body = "";
@@ -311,7 +310,7 @@ function convertFile(contents) {
           <div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>`;
           break;
         default:
-          if (messages[i]) body = messages[i] && `<div>${messages[i]}</div>`;
+          body = messages[i] ? `<div>${messages[i]}</div>` : '';
           break;
       }
 
