@@ -125,24 +125,14 @@ function updateDownloadLink(url) {
   downloadLink.hidden = false;
 }
 
-const include = str => {
-  if (!str) {
-    console.log("hh");
-    return null;
-  }
+const extension = message => {
+  if (!message) return null;
 
   let arr = ["opus", "jpg", "mp4"];
-  for (extension in arr)
-    if (str.includes(`.${arr[extension]} (${fileAttachedString})`))
-      return arr[extension];
+  for (ext in arr)
+    if (message.includes(`.${arr[ext]} (${fileAttachedString})`))
+      return arr[ext];
   return null;
-};
-
-const getMediaFile = (message, extension) => {
-  mediaFile = message.split(`.${extension} (${fileAttachedString})`);
-  mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-  mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
-  return mediaFile;
 };
 
 const genDate = () => {
@@ -176,10 +166,36 @@ const genDate = () => {
   } ${d.getDate()}, ${d.getFullYear()} at ${d.getHours()}:${d.getMinutes()}`;
 };
 
+const getBody = message => {
+  if (!message) return "";
+  mediaFile = message.split(`.${extension} (${fileAttachedString})`);
+  mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
+  mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
+
+  switch (extension(message)) {
+    case "opus":
+      return `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
+    case "jpg":
+      return `
+        <div>
+          <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a>
+        </div> 
+          <div>${mediaFile[1]}</div>`;
+    case "mp4":
+      return `
+            <a href="${mediaFile[0]}.mp4" target="_blank" style="display: block;">Open video in a new tab</a>
+            <div>
+              <video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video>
+            </div>`;
+    default:
+      return `<div>${message}</div>`;
+  }
+};
+
 // Our main function where we get the file content as an input and then output the index.html content
 function convertFile(contents) {
   // export dates and put them in an array
-  var regex = setRegex(dateFormat);
+  var regex = setRegex();
   var date = (function () {
     var arr = [];
     arrPerLine = contents
@@ -284,35 +300,20 @@ function convertFile(contents) {
     </head>
     <body>`,
     ];
-    let unique = [...new Set(usernames)]; // Array of usernames, it should contain just two elements
-    var userOne = unique[unique.length - 1];
 
-    let body = "";
+    /* An array of unique usernames, it should contain just two usernames and maybe something like 
+    'Messages .... Tap for more info.
+    our goal here is to extract one valid username and give it the class 'darker'
+    so we could give it a different stylig
+    */
+    let unique = [...new Set(usernames)];
+    var userOne = unique[unique.length - 1]; // the user that will take the classe 'darker'
+
     for (i = 0; i < date.length; i++) {
       let classe = "";
-      if (usernames[i] == userOne) classe = "darker"; // one user should have this class so their container have a different styling
+      if (usernames[i] == userOne) classe = "darker";
 
-      let extension = include(messages[i]);
-      switch (extension) {
-        case "opus":
-          mediaFile = getMediaFile(messages[i], extension);
-          body = `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
-          break;
-        case "jpg":
-          mediaFile = getMediaFile(messages[i], extension);
-          body = `<div> <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a> </div> 
-            <div>${mediaFile[1]}</div>`;
-          break;
-        case "mp4":
-          mediaFile = getMediaFile(messages[i], extension);
-          body = `
-          <a href="${mediaFile[0]}.mp4" target="_blank" style="display: block;">Open video in a new tab</a>
-          <div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>`;
-          break;
-        default:
-          body = messages[i] ? `<div>${messages[i]}</div>` : '';
-          break;
-      }
+      let body = getBody(messages[i], extension);
 
       html = `
         <div class="container ${classe}">
