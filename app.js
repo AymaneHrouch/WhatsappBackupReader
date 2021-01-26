@@ -125,6 +125,23 @@ function updateDownloadLink(url) {
   downloadLink.hidden = false;
 }
 
+const include = str => {
+  if (!str) return null;
+
+  let arr = ["opus", "jpg", "mp4"];
+  for (extension in arr)
+    if (str.includes(`.${arr[extension]} (${fileAttachedString})`))
+      return arr[extension];
+  return null;
+};
+
+const getMediaFile = (message, extension) => {
+  mediaFile = message.split(`.${extension} (${fileAttachedString})`);
+  mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
+  mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
+  return mediaFile;
+};
+
 // Our main function where we get the file content as an input and then output the index.html content
 function convertFile(contents) {
   // export dates and put them in an array
@@ -237,75 +254,37 @@ function convertFile(contents) {
     var userOne = unique[1];
 
     for (i = 0; i < date.length; i++) {
-      var classe = "",
-        mediaFile = "";
-      var hasOpus = -1,
-        hasFileAttached = -1;
-      if (usernames[i] == userOne) {
-        classe = "darker"; // one user should have this class so their container have a different styling
-      }
-      try {
-        hasOpus = messages[i].indexOf(`.opus (${fileAttachedString})`); // search if the message contain an audio file
-        hasFileAttached = messages[i].indexOf(`(${fileAttachedString})`); // search if the message contain an attached file
-        hasJpg = messages[i].indexOf(`.jpg (${fileAttachedString})`); // search if the message contain a picture
-        hasMp4 = messages[i].indexOf(`.mp4 (${fileAttachedString})`); // search if the message contain a video
-      } catch (err) {
-        console.log("OK");
-      }
-      if (messages[i] == undefined) {
-        // if message is empty
-        html = `
-        <div class="container">
-          <div>${usernames[i]}</div> 
-          <div class="date">${date[i]}</div>
-        </div>`;
-      } else if (hasOpus != -1 && hasFileAttached != -1) {
-        // handle message when it contains audio file
+      var classe = "";
+      mediaFile = "";
+      var hasOpus = -1;
+      if (usernames[i] == userOne) classe = "darker"; // one user should have this class so their container have a different styling
 
-        mediaFile = messages[i].split(`.opus (${fileAttachedString})`);
-        mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-        mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
+      let extension = include(messages[i]);
+      switch (extension) {
+        case "opus":
+          mediaFile = getMediaFile(messages[i], "opus");
+          body = `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
+          break;
+        case "jpg":
+          mediaFile = getMediaFile(messages[i], "jpg");
+          body = `<div> <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a> </div> 
+            <div>${mediaFile[1]}</div>`;
+          break;
+        case "mp4":
+          mediaFile = getMediaFile(messages[i], "mp4");
+          body = `<div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>`;
+          break;
+        default:
+          body = `<div>${messages[i]}</div>`;
+          break;
+      }
 
-        html = `
+      html = `
         <div class="container ${classe}">
           <div class="username">${usernames[i]}</div> 
-          <audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio> 
+          ${body}
           <div class="date">${date[i]}</div>
         </div>`;
-      } else if (hasFileAttached != -1 && hasJpg != -1) {
-        // handle message when it contains picture
-        mediaFile = messages[i].split(`.jpg (${fileAttachedString})`);
-        mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-        mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
-
-        html = `
-        <div class="container ${classe}">
-          <div class="username">${usernames[i]}</div> 
-          <div> <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a> </div> 
-          <div>${mediaFile[1]}</div> <div class="date">${date[i]}</div> 
-        </div>`;
-      } else if (hasFileAttached != -1 && hasMp4 != -1) {
-        // handle message when it contains a video file
-        mediaFile = messages[i].split(`.mp4 (${fileAttachedString})`);
-        mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-        mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
-
-        html = `
-        <div class="container ${classe}">
-          <div class="username">
-            <pre>${usernames[i]}     <a href="${mediaFile[0]}.mp4" target="_blank">Open video in a new window</a></pre>
-          </div> 
-          <div><video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video></div>
-           <div>${mediaFile[1]}</div> <div class="date">${date[i]}</div> 
-        </div>`;
-      } else {
-        // handle message when it does NOT contain any media
-        html = `
-        <div class="container ${classe}">
-          <div class="username">${usernames[i]}</div>
-          <div>${messages[i]}</div> <div class="date">${date[i]}</div> 
-        </div>`;
-      }
       arr.push(html);
     }
 
