@@ -38,30 +38,37 @@ let fileAttachedString = "file attached";
 // Function to help users set custom dateFormat and fileAttachedString for non-English exports
 const setFormat = () => {
   dateFormat = prompt(
-    `Set the date format of your export here.
-        Available placeholders:
-        DD - Day of a month (01 - 31)
-        MM - Number of a month (01 - 12)
-        YY - Last two digits of a year (00 - 99)
-        YYYY - Full year/Four digits (1000 - 9999) 
-        HH - Hours in both 12-hour or 24-hour format (00-23)
-        mm - Minutes (00-59)
-        AA - Ante meridiem and Post meridiem (AM or PM)
-        aa - Same as AA, but works if the "AM" or " PM" strings (space before them including) are missing too
-        
-        (Eg. for French the date format is: DD/MM/YYYY à HH:mm aa)
-        Do you need placeholders for different values? Submit an issue.`,
+    `
+      -->-> Set the date format of your export here <-<--
+
+Available placeholders:
+DD - Day of a month (01 - 31)
+MM - Number of a month (01 - 12)
+YY - Last two digits of a year (00 - 99)
+YYYY - Full year/Four digits (1000 - 9999) 
+HH - Hours in both 12-hour or 24-hour format (00-23)
+mm - Minutes (00-59)
+AA - Ante meridiem and Post meridiem (AM or PM)
+aa - Same as AA, but works if the "AM" or " PM" strings (space before them including) are missing too
+
+(Eg. for French the date format is: DD/MM/YYYY à HH:mm aa)
+Do you need placeholders for different values? Submit an issue.`,
     "DD/MM/YY, HH:mm aa"
   );
 
   fileAttachedString = prompt(
-    `Set the string marking an attached media file.
-    You can find it by searching for a message with an image attached in the exported .txt file
-    The message will probably look something like this:
-    15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
-    In this case, you are looking for that "file attached" string
-    Of course, the string will be different in other languages
-    You need to copy the version occuring in your export into the field below`,
+    `
+      -->-> Set the string marking an attached media file. <-<--
+
+You can find it by searching for a message with an image attached in the exported .txt file
+The message will probably look something like this:
+15/01/21, 11:16 - Username: ‎IMG-20210115-WA0000.jpg (file attached)
+In this case, you are looking for that "file attached" string
+Of course, the string will be different in other languages
+You need to copy the version occuring in your export into the field below
+
+(Eg. For French it is "fichier joint")
+`,
     "file attached"
   );
 };
