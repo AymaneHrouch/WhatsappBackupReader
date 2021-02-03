@@ -3,6 +3,7 @@ const input = document.getElementById("input");
 const downloadLink = document.getElementById("download-link");
 input.addEventListener("change", handleChange);
 let allow = true;
+var inputFileName;
 
 // Function to read the text file and get the text inside it, returns a Promise so we can use it in handleChange()
 const readFile = file => {
@@ -27,6 +28,7 @@ const createDownloadableUrl = contents => {
 // function to set the downloading link to the button and then make it appear
 const updateDownloadLink = url => {
   downloadLink.href = url;
+  downloadLink.download = inputFileName;
   downloadLink.hidden = false;
 };
 
@@ -317,11 +319,12 @@ function handleChange(event) {
 
   // Extracting the title of the uploaded file to display it instead of "Upload file..."
   if (allow) {
-    var fileName = event.target.value.split("\\").pop();
-    if (fileName)
+    inputFileName = event.target.value.split("\\").pop();
+    if (inputFileName)
       document.getElementsByTagName(
         "label"
-      )[0].innerHTML = `<strong>${fileName}</strong>`;
+      )[0].innerHTML = `<strong>${inputFileName}</strong>`;
+	  inputFileName = inputFileName.substring(0, inputFileName.lastIndexOf(".txt")) + ".html"; //Replace the .txt extension for the output file
   }
 
   if (!event.target.files || !allow) {
