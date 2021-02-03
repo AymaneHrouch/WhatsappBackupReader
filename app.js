@@ -231,43 +231,88 @@ const getUsernames = contents => {
   return arr;
 };
 
-/* Function to check if the message contain a media file or not, if yes return the extension, else return null */
-const getExtension = message => {
-  let arr = ["opus", "jpg", "mp4"];
-  for (ext in arr)
-    if (message.includes(`.${arr[ext]} (${fileAttachedString})`))
-      return arr[ext];
-  return null;
+/* Function to check if the message contain any file or not, if yes return the file extension (or true, if the file doesn't have one), else return null */
+const getFileExtension = message => {
+    if (message.includes(` (${fileAttachedString})`)) {
+	  let regex = new RegExp(`(\\.[a-zA-Z0-9]{1,10})?\\s\\(${fileAttachedString}\\)`, "gm"); //Let's hope that no file has extension longer than 10 characters
+      let substrStart = message.search(regex) + 1;
+	  regex = new RegExp(`\\s\\(${fileAttachedString}\\)`, "gm");
+      let substrEnd = message.search(regex);
+      let ext = message.substring(substrStart, substrEnd);
+	  if (ext !== " ") //File has no extension
+        return ext;
+	  return true;
+	}
+    return null
 };
 
 const getBody = message => {
   if (!message) return "";
 
-  let mediaFile;
-  const extension = getExtension(message);
+  let file;
+  const extension = getFileExtension(message);
   if (extension) {
-    mediaFile = message.split(`.${extension} (${fileAttachedString})`);
-    mediaFile[0] = mediaFile[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
-    mediaFile[0] = mediaFile[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
+    if (extension !== true)
+      file = message.split(`.${extension} (${fileAttachedString})`);
+	else
+	  file = message.split(` (${fileAttachedString})`);
+    file[0] = file[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
+    file[0] = file[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
   }
+
+  const extensionsWithIconsAvailable = ["AAC", "AI", "AIFF", "AVI", "BMP", "C", "CPP", "CSS", "CSV", "DAT", "DMG", "DOC", "DOTX", "DWG", "DXF", "EPS", "EXE", "FLV", "GIF", "H", "HPP", "HTML", "ICS", "ISO", "JAVA", "JPG", "JS", "KEY", "LESS", "MID", "MP3", "MP4", "MPG", "ODF", "ODS", "ODT", "OTP", "OTS", "OTT", "PDF", "PHP", "PNG", "PPT", "PSD", "PY", "QT", "RAR", "RB", "RTF", "SASS", "SCSS", "SQL", "TGA", "TGZ", "TIFF", "TXT", "WAV", "XLS", "XLSX", "XML", "YML", "ZIP"];
 
   switch (extension) {
     case "opus":
-      return `<audio controls><source src="${mediaFile[0]}.opus" type="audio/ogg"></audio>`;
+    case "ogg":
+      return `<audio controls><source src="${file[0]}.${extension}" type="audio/ogg"></audio>`;
+    case "wav":
+      return `<audio controls><source src="${file[0]}.${extension}" type="audio/wav"></audio>`;
+    case "mp3":
+    case "m4a":
+      return `<audio controls><source src="${file[0]}.${extension}" type="audio/mpeg"></audio>`;
     case "jpg":
+    case "jpeg":
+    case "png":
+    case "webp":
       return `
         <div>
-          <a href="${mediaFile[0]}.jpg" target="_blank"><img src="${mediaFile[0]}.jpg"></a>
+          <a href="${file[0]}.${extension}" target="_blank"><img src="${file[0]}.${extension}"></a>
         </div> 
-          <div>${mediaFile[1]}</div>`;
+        <div>${file[1]}</div>`;
     case "mp4":
+    case "avi":
+    case "mov":
+    case "m4v":
+    case "mkv":
+    case "mpg":
+    case "mpeg":
       return `
-            <a href="${mediaFile[0]}.mp4" target="_blank" style="display: block;">Open video in a new tab</a>
-            <div>
-              <video width="250" controls><source src="${mediaFile[0]}.mp4" alt=""></video>
-            </div>`;
+        <a href="${file[0]}.${extension}" target="_blank" style="display: block;">Open video in a new tab</a>
+        <div>
+          <video width="250" controls><source src="${file[0]}.${extension}" alt=""></video>
+        </div>
+		<div>${file[1]}</div>`;
     default:
-      return `<div>${message}</div>`;
+      if (extension && extension !== true && extensionsWithIconsAvailable.includes(extension.toUpperCase())) //This means that there is a file and it has an extension...
+        return `
+          <div>
+            <a href="${file[0]}.${extension}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/${extension}.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}.${extension}</a>
+          </div>
+		  <div>${file[1]}</div>`;
+	  else if (extension && extension !== true)
+	    return `
+          <div>
+            <a href="${file[0]}.${extension}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/_blank.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}.${extension}</a>
+          </div>
+		  <div>${file[1]}</div>`;
+	  if (extension === true) //This means that the file has no extension...
+	    return `
+          <div>
+            <a href="${file[0]}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/_blank.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}</a>
+          </div>
+		  <div>${file[1]}</div>`;
+      return `<div>${message}</div>`; //There's no file attached
   }
 };
 
