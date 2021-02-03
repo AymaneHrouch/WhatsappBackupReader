@@ -53,7 +53,7 @@ aa - Same as AA, but works if the "AM" or " PM" strings (space before them inclu
 
 (Eg. for French the date format is: DD/MM/YYYY à HH:mm aa)
 Do you need placeholders for different values? Submit an issue.`,
-    "DD/MM/YY, HH:mm aa"
+    dateFormat
   );
 
   fileAttachedString = prompt(
@@ -69,7 +69,7 @@ You need to copy the version occuring in your export into the field below
 
 (Eg. For French it is "fichier joint")
 `,
-    "file attached"
+    fileAttachedString
   );
 };
 
