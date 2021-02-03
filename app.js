@@ -333,6 +333,7 @@ function handleChange(event) {
     return;
   }
 
+  downloadLink.hidden = true;
   readFile(event.target.files[0]).then(contents => {
     const convertedFile = convertFile(contents);
     updateDownloadLink(createDownloadableUrl(convertedFile));
