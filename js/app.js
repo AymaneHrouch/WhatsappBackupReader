@@ -170,21 +170,6 @@ All rights reserved to <a href="http://aymane.hrouch.me" target="_blank">Aymane 
 </body>
 </html>`;
 
-/* --------------------------------------------------  GET COMPONENTS -------------------------------------------------- */
-
-const getDates = contents => {
-  const lines = contents.slice(0);
-  const arr = [];
-
-  for (i = 0; i < lines.length; i++) {
-    lines[i] = lines[i].split("-");
-  }
-  for (i = 0; i < lines.length; i++) {
-    arr[i] = lines[i][0];
-  }
-  return arr;
-};
-
 // Process the date format into a regex
 const getRegex = () => {
   regexString = dateFormat
@@ -200,13 +185,31 @@ const getRegex = () => {
   return new RegExp(`(?:[\\r\\n]*)(?=^${regexString}\\s-\\s)`, "m");
 };
 
+/* --------------------------------------------------  GET COMPONENTS -------------------------------------------------- */
+
+const getDates = contents => {
+  const lines = contents.slice(0);
+  const arr = [];
+
+  for (i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].split("-");
+  }
+  for (i = 0; i < lines.length; i++) {
+    arr[i] = lines[i][0];
+  }
+  return arr;
+};
+
 const getMessages = contents => {
   const lines = contents.slice(0);
   const arr = [];
 
   for (i = 0; i < lines.length; i++) {
     lines[i] = lines[i].split(": ");
-    arr[i] = lines[i][1];
+    arr[i] = anchorme({
+      input: lines[i][1],
+      options: { attributes: { target: "_blank" } },
+    });
   }
   return arr;
 };
@@ -233,17 +236,21 @@ const getUsernames = contents => {
 
 /* Function to check if the message contain any file or not, if yes return the file extension (or true, if the file doesn't have one), else return null */
 const getFileExtension = message => {
-    if (message.includes(` (${fileAttachedString})`)) {
-	  let regex = new RegExp(`(\\.[a-zA-Z0-9]{1,10})?\\s\\(${fileAttachedString}\\)`, "gm"); //Let's hope that no file has extension longer than 10 characters
-      let substrStart = message.search(regex) + 1;
-	  regex = new RegExp(`\\s\\(${fileAttachedString}\\)`, "gm");
-      let substrEnd = message.search(regex);
-      let ext = message.substring(substrStart, substrEnd);
-	  if (ext !== " ") //File has no extension
-        return ext;
-	  return true;
-	}
-    return null
+  if (message.includes(` (${fileAttachedString})`)) {
+    let regex = new RegExp(
+      `(\\.[a-zA-Z0-9]{1,10})?\\s\\(${fileAttachedString}\\)`,
+      "gm"
+    ); //Let's hope that no file has extension longer than 10 characters
+    let substrStart = message.search(regex) + 1;
+    regex = new RegExp(`\\s\\(${fileAttachedString}\\)`, "gm");
+    let substrEnd = message.search(regex);
+    let ext = message.substring(substrStart, substrEnd);
+    if (ext !== " ")
+      //File has no extension
+      return ext;
+    return true;
+  }
+  return null;
 };
 
 const getBody = message => {
@@ -254,13 +261,75 @@ const getBody = message => {
   if (extension) {
     if (extension !== true)
       file = message.split(`.${extension} (${fileAttachedString})`);
-	else
-	  file = message.split(` (${fileAttachedString})`);
+    else file = message.split(` (${fileAttachedString})`);
     file[0] = file[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
     file[0] = file[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
   }
 
-  const extensionsWithIconsAvailable = ["AAC", "AI", "AIFF", "AVI", "BMP", "C", "CPP", "CSS", "CSV", "DAT", "DMG", "DOC", "DOTX", "DWG", "DXF", "EPS", "EXE", "FLV", "GIF", "H", "HPP", "HTML", "ICS", "ISO", "JAVA", "JPG", "JS", "KEY", "LESS", "MID", "MP3", "MP4", "MPG", "ODF", "ODS", "ODT", "OTP", "OTS", "OTT", "PDF", "PHP", "PNG", "PPT", "PSD", "PY", "QT", "RAR", "RB", "RTF", "SASS", "SCSS", "SQL", "TGA", "TGZ", "TIFF", "TXT", "WAV", "XLS", "XLSX", "XML", "YML", "ZIP"];
+  const extensionsWithIconsAvailable = [
+    "AAC",
+    "AI",
+    "AIFF",
+    "AVI",
+    "BMP",
+    "C",
+    "CPP",
+    "CSS",
+    "CSV",
+    "DAT",
+    "DMG",
+    "DOC",
+    "DOTX",
+    "DWG",
+    "DXF",
+    "EPS",
+    "EXE",
+    "FLV",
+    "GIF",
+    "H",
+    "HPP",
+    "HTML",
+    "ICS",
+    "ISO",
+    "JAVA",
+    "JPG",
+    "JS",
+    "KEY",
+    "LESS",
+    "MID",
+    "MP3",
+    "MP4",
+    "MPG",
+    "ODF",
+    "ODS",
+    "ODT",
+    "OTP",
+    "OTS",
+    "OTT",
+    "PDF",
+    "PHP",
+    "PNG",
+    "PPT",
+    "PSD",
+    "PY",
+    "QT",
+    "RAR",
+    "RB",
+    "RTF",
+    "SASS",
+    "SCSS",
+    "SQL",
+    "TGA",
+    "TGZ",
+    "TIFF",
+    "TXT",
+    "WAV",
+    "XLS",
+    "XLSX",
+    "XML",
+    "YML",
+    "ZIP",
+  ];
 
   switch (extension) {
     case "opus":
@@ -294,20 +363,26 @@ const getBody = message => {
         </div>
 		<div>${file[1]}</div>`;
     default:
-      if (extension && extension !== true && extensionsWithIconsAvailable.includes(extension.toUpperCase())) //This means that there is a file and it has an extension...
+      if (
+        extension &&
+        extension !== true &&
+        extensionsWithIconsAvailable.includes(extension.toUpperCase())
+      )
+        //This means that there is a file and it has an extension...
         return `
           <div>
             <a href="${file[0]}.${extension}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/${extension}.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}.${extension}</a>
           </div>
 		  <div>${file[1]}</div>`;
-	  else if (extension && extension !== true)
-	    return `
+      else if (extension && extension !== true)
+        return `
           <div>
             <a href="${file[0]}.${extension}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/_blank.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}.${extension}</a>
           </div>
 		  <div>${file[1]}</div>`;
-	  if (extension === true) //This means that the file has no extension...
-	    return `
+      if (extension === true)
+        //This means that the file has no extension...
+        return `
           <div>
             <a href="${file[0]}" target="_blank" style="display:table-row"><img src="http://raw.githubusercontent.com/redbooth/free-file-icons/master/32px/_blank.png" style="height: 32px; width:32px; margin-right: 8px;"><span style="display: table-cell; vertical-align: middle;">${file[0]}</a>
           </div>
@@ -369,7 +444,8 @@ function handleChange(event) {
       document.getElementsByTagName(
         "label"
       )[0].innerHTML = `<strong>${inputFileName}</strong>`;
-	  inputFileName = inputFileName.substring(0, inputFileName.lastIndexOf(".txt")) + ".html"; //Replace the .txt extension for the output file
+    inputFileName =
+      inputFileName.substring(0, inputFileName.lastIndexOf(".txt")) + ".html"; //Replace the .txt extension for the output file
   }
 
   if (!event.target.files || !allow) {
