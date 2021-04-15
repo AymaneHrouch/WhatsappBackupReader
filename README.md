@@ -9,7 +9,7 @@ Whatsapp limits:
 
 ![](whatsapplimittable.jpg)
 
-You can use it from [HERE](http://jspractice666.000webhostapp.com/)
+You can use it from [HERE](https://whatsappbr.netlify.app/)
 
 You can also check this [DEMONSTRATION VIDEO](https://www.youtube.com/watch?v=bcFvHOYVUHk) on Youtube.
 
