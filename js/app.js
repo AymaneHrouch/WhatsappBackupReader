@@ -1,12 +1,14 @@
 /* --------------------------------------------------  INPUT HANDLING -------------------------------------------------- */
 const input = document.getElementById("input");
+const zipInput = document.getElementById("zipInput");
 const downloadLink = document.getElementById("download-link");
 input.addEventListener("change", handleChange);
+zipInput.addEventListener("change", handleZipFile);
 let allow = true;
 var inputFileName;
 
 // Function to read the text file and get the text inside it, returns a Promise so we can use it in handleChange()
-const readFile = file => {
+const readFile = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsText(file);
@@ -18,7 +20,7 @@ const readFile = file => {
 };
 
 // After we finish our operations we have to create a download link
-const createDownloadableUrl = contents => {
+const createDownloadableUrl = (contents) => {
   const textBlob = new Blob([contents], {
     type: "text/plain",
   });
@@ -26,9 +28,9 @@ const createDownloadableUrl = contents => {
 };
 
 // function to set the downloading link to the button and then make it appear
-const updateDownloadLink = url => {
+const updateDownloadLink = (url, downloadFileName) => {
   downloadLink.href = url;
-  downloadLink.download = inputFileName;
+  downloadLink.download = downloadFileName;
   downloadLink.hidden = false;
 };
 
@@ -77,40 +79,15 @@ You need to copy the version occuring in your export into the field below
 
 /* Generate date of parsing*/
 // Function to generate a leading zero
-const pad = n => (n < 10 ? `0${n}` : n);
+const pad = (n) => (n < 10 ? `0${n}` : n);
 
 // Function to generate string containing the date of parsing
 const genDate = () => {
   const d = new Date();
-  var months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  var days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-  return `${days[d.getDay()]}, ${
-    months[d.getMonth()]
-  } ${d.getDate()}, ${d.getFullYear()} at ${pad(d.getHours())}:${pad(
-    d.getMinutes()
-  )}`;
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 const htmlHeader = `
@@ -187,7 +164,7 @@ const getRegex = () => {
 
 /* --------------------------------------------------  GET COMPONENTS -------------------------------------------------- */
 
-const getDates = contents => {
+const getDates = (contents) => {
   const lines = contents.slice(0);
   const arr = [];
 
@@ -200,7 +177,7 @@ const getDates = contents => {
   return arr;
 };
 
-const getMessages = contents => {
+const getMessages = (contents) => {
   const lines = contents.slice(0);
   const arr = [];
 
@@ -214,7 +191,7 @@ const getMessages = contents => {
   return arr;
 };
 
-const getUsernames = contents => {
+const getUsernames = (contents) => {
   const lines = contents.slice(0);
   var arr = [];
 
@@ -235,12 +212,9 @@ const getUsernames = contents => {
 };
 
 /* Function to check if the message contain any file or not, if yes return the file extension (or true, if the file doesn't have one), else return null */
-const getFileExtension = message => {
+const getFileExtension = (message) => {
   if (message.includes(` (${fileAttachedString})`)) {
-    let regex = new RegExp(
-      `(\\.[a-zA-Z0-9]{1,10})?\\s\\(${fileAttachedString}\\)`,
-      "gm"
-    ); //Let's hope that no file has extension longer than 10 characters
+    let regex = new RegExp(`(\\.[a-zA-Z0-9]{1,10})?\\s\\(${fileAttachedString}\\)`, "gm"); //Let's hope that no file has extension longer than 10 characters
     let substrStart = message.search(regex) + 1;
     regex = new RegExp(`\\s\\(${fileAttachedString}\\)`, "gm");
     let substrEnd = message.search(regex);
@@ -253,14 +227,13 @@ const getFileExtension = message => {
   return null;
 };
 
-const getBody = message => {
+const getBody = (message) => {
   if (!message) return "";
 
   let file;
   const extension = getFileExtension(message);
   if (extension) {
-    if (extension !== true)
-      file = message.split(`.${extension} (${fileAttachedString})`);
+    if (extension !== true) file = message.split(`.${extension} (${fileAttachedString})`);
     else file = message.split(` (${fileAttachedString})`);
     file[0] = file[0].replace(/&lrm;|\u200E/gi, ""); //remove left-to-right text mark that would break link to the file
     file[0] = file[0].replace(/&rlm;|\u200F/gi, ""); //remove right-to-left text mark that would break link to the file
@@ -363,11 +336,7 @@ const getBody = message => {
         </div>
 		<div>${file[1]}</div>`;
     default:
-      if (
-        extension &&
-        extension !== true &&
-        extensionsWithIconsAvailable.includes(extension.toUpperCase())
-      )
+      if (extension && extension !== true && extensionsWithIconsAvailable.includes(extension.toUpperCase()))
         //This means that there is a file and it has an extension...
         return `
           <div>
@@ -393,14 +362,14 @@ const getBody = message => {
 
 /* --------------------------------------------------  JOIN ALL COMPONENTS -------------------------------------------------- */
 /* ---------------- Our main function where we process the file content and return the output of index.html ---------------- */
-const convertFile = contents => {
+const convertFile = (contents) => {
   const regex = getRegex();
 
   /* Split text file using the appropriate regExp */
   const splitted = contents
     .split(regex)
     .filter(Boolean)
-    .map(text => text.replace(/[\r\n]+/g, "<br>"));
+    .map((text) => text.replace(/[\r\n]+/g, "<br>"));
 
   const dates = getDates(splitted);
   const messages = getMessages(splitted);
@@ -440,12 +409,8 @@ function handleChange(event) {
   // Extracting the title of the uploaded file to display it instead of "Upload file..."
   if (allow) {
     inputFileName = event.target.value.split("\\").pop();
-    if (inputFileName)
-      document.getElementsByTagName(
-        "label"
-      )[0].innerHTML = `<strong>${inputFileName}</strong>`;
-    inputFileName =
-      inputFileName.substring(0, inputFileName.lastIndexOf(".txt")) + ".html"; //Replace the .txt extension for the output file
+    if (inputFileName) document.getElementsByTagName("label")[0].innerHTML = `<strong>${inputFileName}</strong>`;
+    inputFileName = inputFileName.substring(0, inputFileName.lastIndexOf(".txt")) + ".html"; //Replace the .txt extension for the output file
   }
 
   if (!event.target.files || !allow) {
@@ -455,8 +420,53 @@ function handleChange(event) {
   }
 
   downloadLink.hidden = true;
-  readFile(event.target.files[0]).then(contents => {
+  readFile(event.target.files[0]).then((contents) => {
     const convertedFile = convertFile(contents);
-    updateDownloadLink(createDownloadableUrl(convertedFile));
+    updateDownloadLink(createDownloadableUrl(convertedFile), inputFileName);
+  });
+}
+
+async function handleZipFile(event) {
+  console.log("got it");
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const zipData = new Uint8Array(arrayBuffer);
+
+  // Unzip
+  fflate.unzip(zipData, (err, files) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+
+    const dict = {};
+
+    for (const [name, data] of Object.entries(files)) {
+      // decode Uint8Array to string (assuming text files)
+      const contents = new TextDecoder().decode(data);
+      document.getElementById("zip-file-label").innerHTML = `<strong>${name}</strong>`;
+      let fileName = name.substring(0, name.lastIndexOf(".txt")) + ".html";
+      const convertedFile = convertFile(contents);
+      dict[fileName] = convertedFile;
+    }
+
+    const encoder = new TextEncoder();
+    const zipEntries = {};
+
+    // Convert each string to Uint8Array
+    for (const [filename, content] of Object.entries(dict)) {
+      zipEntries[filename] = encoder.encode(content);
+    }
+
+    // Create zip
+    const zipped = fflate.zipSync(zipEntries);
+
+    // Trigger download
+    const blob = new Blob([zipped], { type: "application/zip" });
+    const url = URL.createObjectURL(blob);
+
+    updateDownloadLink(url, "result.zip");
   });
 }
